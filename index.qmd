@@ -17,10 +17,19 @@ All data sourced from
 
 ```{r}
 library(tidyverse)
+library(lubridate)
 library(readr)
+
 cabi_jan <- read_csv("data/202501-capitalbikeshare-tripdata.csv")
+
 cabi_jul <- read_csv("data/202407-capitalbikeshare-tripdata.csv")
+
 cabi_combined <- rbind(cabi_jan, cabi_jul)
+
+cabi_combined$started_at <- as.POSIXct(cabi_combined$started_at)
+
+cabi_combined <- cabi_combined |>
+  mutate(month = if_else(year(started_at) == 2025, "January", "July"))
 ```
 
 # Visualization 1
@@ -35,6 +44,7 @@ cabi_jan |>
                     labels = c("electric_bike" = "Electric Bike",
                                "classic_bike" = "Classic Bike"))+
   labs(title = "A Greater Proportion of Capital Bikeshare Rides Were Taken Later in January",
+       subtitle = "Density of rides taken in January 2025, split by bike type",
        caption = "Data Source: Capital Bikeshare", 
        fill = "Bike Type",
        y = "Density")+
@@ -53,10 +63,41 @@ This graph visualizes ridership trends for Capital Bikeshare, a bike rental comp
 # Visualization 2
 Stacked bar by days of week
 ```{r}
+cabi_combined <- cabi_combined |>
+  mutate(day_of_week = weekdays(started_at))
+           
+cabi_combined$day_of_week <- factor(cabi_combined$day_of_week, levels = c("Sunday","Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))
 
-  
+cabi_counts <- cabi_combined |>
+  group_by(month, day_of_week, rideable_type) |>
+  summarise(count = n())
+
+cabi_counts |>
+  ggplot(mapping = aes(x = day_of_week,
+                       y = count,
+                       fill = rideable_type)) +
+  geom_bar(stat = "identity") +
+    scale_fill_manual(values = c("electric_bike" = "dodgerblue",
+                               "classic_bike" = "firebrick3"),
+                    labels = c("electric_bike" = "Electric Bike",
+                               "classic_bike" = "Classic Bike"))+
+  labs(title = "Most Capital Bikeshare Rides Happen During the Workweek",
+       subtitle = "Count of classic and e-bike rides taken for each day of the week in July 2024 and January 2025",
+       caption = "Data Source: Capital Bikeshare", 
+       fill = "Bike Type")+
+  theme_minimal()+
+  theme(
+    plot.title = element_text(face = "bold"),
+    axis.title.x = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+    axis.title.y = element_blank(),
+    axis.text.y = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()) +
+  facet_wrap(~month)
+
 ```
-This visualization...
+This visualization shows how Capital Bikeshare ridership varies throughout the week. For both summer and winter months the peak day of the week is during the workweek, showing that many people use Capital Bikeshare for their commute. Policymakers can utilize this information to make additional preparations during the these specific weekdays when more people are riding, like ensuring bikes are distributed to all stations and having prompt pickups for broken bikes that have had maintenance requests. This would help make biking a viable transit option for more D.C. residents.
 
 # Visualization 3
 Stacked bar by time of day or length of time hist
