@@ -8,5 +8,68 @@ format:
   html:
     embed-resources: true
 ---
+D.C. Capital Bikeshare Data Visualizations
 
-## 
+All data sourced from  
+[Capital Bikeshare](https://s3.amazonaws.com/capitalbikeshare-data/index.html)
+
+# Data Set-Up 
+
+```{r}
+library(tidyverse)
+library(readr)
+cabi_jan <- read_csv("data/202501-capitalbikeshare-tripdata.csv")
+cabi_jul <- read_csv("data/202407-capitalbikeshare-tripdata.csv")
+cabi_combined <- rbind(cabi_jan, cabi_jul)
+```
+
+# Visualization 1
+Classic vs. E-Bike Breakdown over January
+```{r}
+cabi_jan |>
+  ggplot(mapping = aes(x = started_at))+
+  geom_density(mapping = aes(fill = rideable_type),
+               alpha = .4)+
+  scale_fill_manual(values = c("electric_bike" = "dodgerblue",
+                               "classic_bike" = "firebrick3"),
+                    labels = c("electric_bike" = "Electric Bike",
+                               "classic_bike" = "Classic Bike"))+
+  labs(title = "A Greater Proportion of Capital Bikeshare Rides Were Taken Later in January",
+       caption = "Data Source: Capital Bikeshare", 
+       fill = "Bike Type",
+       y = "Density")+
+  theme_minimal()+
+  theme(
+    plot.title = element_text(face = "bold"),
+    axis.title.x = element_blank(),
+    axis.text.y = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank())
+  
+  
+```
+This graph visualizes ridership trends for Capital Bikeshare, a bike rental company that provides additional mobility options for D.C. residents. The graph shows that external factors can severely decrease ridership rates, like the snowstorm that occurred on January 6th and the cold temperatures (and potential inauguration chaos) on January 20th. The weather at the end of January was much nicer, with temperatures reaching up to 62 degrees, which coincides with when the number of classic bike rides was greater than e-bikes. With this information, policy makers can anticipate how external factors may affect ridership going forward, taking necessary steps like ensuring stations are stocked with classic bikes during warm days. 
+
+# Visualization 2
+Stacked bar by days of week
+```{r}
+
+  
+```
+This visualization...
+
+# Visualization 3
+Stacked bar by time of day or length of time hist
+```{r}
+
+  
+```
+This visualization...
+
+# Visualization 4
+Map
+```{r}
+
+  
+```
+This visualization...
