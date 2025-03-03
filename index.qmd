@@ -19,6 +19,9 @@ All data sourced from
 library(tidyverse)
 library(lubridate)
 library(readr)
+library(sf)
+library(tigris)
+library(crsuggest)
 
 cabi_jan <- read_csv("data/202501-capitalbikeshare-tripdata.csv")
 
@@ -136,9 +139,38 @@ cabi_tod |>
 Building off the previous visualization showing that most trips take place during the work week, this graph looks at how many trips are taken at each hour of the day. For both classic and e-bikes there are peaks during the morning commute hours (7 to 9) and evening commute hours (5 to 7 PM, or 17 to 19). This applies for warm months like July and cold months like January, although there are less rides overall in January (especially for classic bikes). Policymakers can use this information to better serve bike-commuters in D.C. by doing things like dispatching additional traffic police to specifically watch for bicyclist safety during these peak times.
 
 # Visualization 4
-Map
+Map of where rides start
 ```{r}
+DC_roads <- roads(state = "DC",
+                  county = "District of Columbia")
 
-  
+cabi_map_dc <- cabi_combined |>
+  filter(start_lat >= 38.6 & start_lat <= 39 & start_lng >= -77.1 & start_lng <= -76.9 & start_station_id != "") |>
+group_by(start_station_id) |>
+  summarise(count = n(),
+            start_lat = first(start_lat),
+            start_lng = first(start_lng))
+
+cabi_map_dc <- st_as_sf(cabi_map_dc, coords = c("start_lng", "start_lat")) |>
+  st_set_crs(value = 4326)
+
+ggplot() +
+  geom_sf(data = DC_roads,
+          alpha = .3) +
+  geom_sf(data = cabi_map_dc,
+          mapping = aes(color = count)) +
+  scale_color_gradient(low = "pink", high = "red") +
+   labs(title = "Most Capital Bikeshare Rides start in areas near the center of D.C.",
+       subtitle = "Map of where Capital Bikeshare bikerides start from in the immediate D.C. area",
+       caption = "Data Source: Capital Bikeshare",
+       color = "Number of Rides")+
+  theme_minimal()+
+  theme(
+    plot.title = element_text(face = "bold"),
+    axis.title.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.text.x = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()) 
 ```
-This visualization...
+This visualization shows geographically where bikerides begin. A majority of activity happens in Wards 1, 2, and 6. With this data, policymakers can consider adding additional bike stations for these high-traffic areas, and can focus on ways to increase biking for the northern neighborhoods and East of the Anacostia. 
