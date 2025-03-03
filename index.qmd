@@ -140,10 +140,11 @@ Building off the previous visualization showing that most trips take place durin
 
 # Visualization 4
 Map of where rides start
-```{r}
+```{r, results='hide'}
 DC_roads <- roads(state = "DC",
                   county = "District of Columbia")
-
+```
+```{r}
 cabi_map_dc <- cabi_combined |>
   filter(start_lat >= 38.6 & start_lat <= 39 & start_lng >= -77.1 & start_lng <= -76.9 & start_station_id != "") |>
 group_by(start_station_id) |>
@@ -161,7 +162,8 @@ ggplot() +
           mapping = aes(color = count)) +
   scale_color_gradient(low = "pink", high = "red") +
    labs(title = "Most Capital Bikeshare Rides start in areas near the center of D.C.",
-       subtitle = "Map of where Capital Bikeshare bikerides start from in the immediate D.C. area",
+       subtitle = paste("Map of where Capital Bikeshare bikerides started",
+                        "from\nin the immediate D.C. area in July 2024 and January 2025"),
        caption = "Data Source: Capital Bikeshare",
        color = "Number of Rides")+
   theme_minimal()+
